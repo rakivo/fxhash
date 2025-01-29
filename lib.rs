@@ -23,6 +23,7 @@
 //! potentially cause quadratic behavior in `HashMap`s.  So it is not recommended to expose
 //! this hash in places where collissions or DDOS attacks may be a concern.
 
+use std::iter::FromIterator;
 use std::collections::{HashMap, HashSet};
 use std::default::Default;
 use std::hash::{BuildHasherDefault, Hash, Hasher};
@@ -68,6 +69,20 @@ impl<K, V> DerefMut for FxHashMap<K, V> {
     }
 }
 
+impl<K, V> FromIterator<(K, V)> for FxHashMap<K, V>
+where
+    K: Eq + Hash
+{
+    #[inline]
+    fn from_iter<I>(iter: I) -> Self
+    where
+        I: IntoIterator<Item = (K, V)>
+    {
+        let inner_set = HashMap::<K, V, FxBuildHasher>::from_iter(iter);
+        Self(inner_set)
+    }
+}
+
 /// A `HashSet` using a default Fx hasher.
 #[derive(Default)]
 #[repr(transparent)]
@@ -101,6 +116,20 @@ impl<V> Deref for FxHashSet<V> {
     }
 }
 
+impl<V> FromIterator<V> for FxHashSet<V>
+where
+    V: Eq + Hash
+{
+    #[inline]
+    fn from_iter<I>(iter: I) -> Self
+    where
+        I: IntoIterator<Item = V>
+    {
+        let inner_set = HashSet::<V, FxBuildHasher>::from_iter(iter);
+        Self(inner_set)
+    }
+}
+    
 const ROTATE: u32 = 5;
 const SEED64: u64 = 0x51_7c_c1_b7_27_22_0a_95;
 const SEED32: u32 = 0x9e_37_79_b9;
