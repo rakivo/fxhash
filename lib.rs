@@ -36,6 +36,7 @@ pub type FxBuildHasher = BuildHasherDefault<FxHasher>;
 
 /// A `HashMap` using a default Fx hasher.
 ///
+#[derive(Default)]
 #[repr(transparent)]
 pub struct FxHashMap<K, V>(HashMap<K, V, FxBuildHasher>);
 
@@ -61,6 +62,7 @@ impl<K, V> Deref for FxHashMap<K, V> {
 }
 
 /// A `HashSet` using a default Fx hasher.
+#[derive(Default)]
 #[repr(transparent)]
 pub struct FxHashSet<V>(HashSet<V, FxBuildHasher>);
 
