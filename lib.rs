@@ -26,7 +26,7 @@
 use std::collections::{HashMap, HashSet};
 use std::default::Default;
 use std::hash::{BuildHasherDefault, Hash, Hasher};
-use std::ops::{BitXor, Deref};
+use std::ops::{BitXor, Deref, DerefMut};
 
 extern crate byteorder;
 use byteorder::{ByteOrder, NativeEndian};
@@ -61,6 +61,13 @@ impl<K, V> Deref for FxHashMap<K, V> {
     }
 }
 
+impl<K, V> DerefMut for FxHashMap<K, V> {
+    #[inline]
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 /// A `HashSet` using a default Fx hasher.
 #[derive(Default)]
 #[repr(transparent)]
@@ -75,6 +82,13 @@ impl<V> FxHashSet<V> {
     #[inline]
     pub fn with_capacity(n: usize) -> Self {
         Self(HashSet::with_capacity_and_hasher(n, FxBuildHasher::default()))
+    }
+}
+
+impl<V> DerefMut for FxHashSet<V> {
+    #[inline]
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
 
