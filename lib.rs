@@ -8,8 +8,6 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-#![deny(missing_docs)]
-
 //! # Fx Hash
 //!
 //! This hashing algorithm was extracted from the Rustc compiler.  This is the same hashing
@@ -28,7 +26,7 @@
 use std::collections::{HashMap, HashSet};
 use std::default::Default;
 use std::hash::{BuildHasherDefault, Hash, Hasher};
-use std::ops::BitXor;
+use std::ops::{BitXor, Deref};
 
 extern crate byteorder;
 use byteorder::{ByteOrder, NativeEndian};
@@ -38,15 +36,54 @@ pub type FxBuildHasher = BuildHasherDefault<FxHasher>;
 
 /// A `HashMap` using a default Fx hasher.
 ///
-/// Use `FxHashMap::default()`, not `new()` to create a new `FxHashMap`.
-/// To create with a reserved capacity, use `FxHashMap::with_capacity_and_hasher(num, Default::default())`.
-pub type FxHashMap<K, V> = HashMap<K, V, FxBuildHasher>;
+#[repr(transparent)]
+pub struct FxHashMap<K, V>(HashMap<K, V, FxBuildHasher>);
+
+impl<K, V> FxHashMap<K, V> {
+    #[inline]
+    pub fn new() -> Self {
+        Self(HashMap::with_hasher(FxBuildHasher::default()))
+    }
+
+    #[inline]
+    pub fn with_capacity(n: usize) -> Self {
+        Self(HashMap::with_capacity_and_hasher(n, FxBuildHasher::default()))
+    }
+}
+
+impl<K, V> Deref for FxHashMap<K, V> {
+    type Target = HashMap<K, V, FxBuildHasher>;
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 
 /// A `HashSet` using a default Fx hasher.
-///
-/// Note: Use `FxHashSet::default()`, not `new()` to create a new `FxHashSet`.
-/// To create with a reserved capacity, use `FxHashSet::with_capacity_and_hasher(num, Default::default())`.
-pub type FxHashSet<V> = HashSet<V, FxBuildHasher>;
+#[repr(transparent)]
+pub struct FxHashSet<V>(HashSet<V, FxBuildHasher>);
+
+impl<V> FxHashSet<V> {
+    #[inline]
+    pub fn new() -> Self {
+        Self(HashSet::with_hasher(FxBuildHasher::default()))
+    }
+
+    #[inline]
+    pub fn with_capacity(n: usize) -> Self {
+        Self(HashSet::with_capacity_and_hasher(n, FxBuildHasher::default()))
+    }
+}
+
+impl<V> Deref for FxHashSet<V> {
+    type Target = HashSet<V, FxBuildHasher>;
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 
 const ROTATE: u32 = 5;
 const SEED64: u64 = 0x51_7c_c1_b7_27_22_0a_95;
@@ -58,7 +95,7 @@ const SEED: usize = SEED32 as usize;
 const SEED: usize = SEED64 as usize;
 
 trait HashWord {
-    fn hash_word(&mut self, Self);
+    fn hash_word(&mut self, _: Self);
 }
 
 macro_rules! impl_hash_word {
