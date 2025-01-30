@@ -37,8 +37,8 @@ pub type FxBuildHasher = BuildHasherDefault<FxHasher>;
 
 /// A `HashMap` using a default Fx hasher.
 ///
-#[derive(Default)]
 #[repr(transparent)]
+#[derive(Debug, Clone, Default)]
 pub struct FxHashMap<K, V>(HashMap<K, V, FxBuildHasher>);
 
 impl<K, V> FxHashMap<K, V> {
@@ -84,8 +84,8 @@ where
 }
 
 /// A `HashSet` using a default Fx hasher.
-#[derive(Default)]
 #[repr(transparent)]
+#[derive(Debug, Clone, Default)]
 pub struct FxHashSet<V>(HashSet<V, FxBuildHasher>);
 
 impl<V> FxHashSet<V> {
